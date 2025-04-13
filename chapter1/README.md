@@ -11,7 +11,8 @@
 
 1. 마이크로서비스 구조 설계 및 초기화
 2. 서비스 간 독립 실행 설정
-3. React 프로젝트 초기화 (TypeScript 기반)
+3. 파일 기반 H2 데이터베이스 구성 (서비스별 독립적 DB 구성)
+4. React 프로젝트 초기화 (TypeScript 기반)
 
 ---
 
@@ -33,6 +34,8 @@
 implementation 'org.springframework.boot:spring-boot-starter-web'         // REST API
 implementation 'org.springframework.boot:spring-boot-starter-actuator'    // 헬스체크, 모니터링
 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'  // Swagger(OpenAPI 문서화)
+implementation 'org.springframework.boot:spring-boot-starter-data-jpa'    // JPA 지원
+runtimeOnly 'com.h2database:h2'                                            // H2 데이터베이스 (파일 기반)
 ```
 
 ### 2. 프론트엔드 : React 기반 프로젝트 초기화
