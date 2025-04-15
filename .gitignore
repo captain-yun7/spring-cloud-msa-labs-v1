@@ -48,3 +48,6 @@ dist/
 
 # 기타 설정 및 캐시 파일
 .cache/
+
+# db
+data/
