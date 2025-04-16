@@ -1,0 +1,3 @@
+rootProject.name = 'chapter1'
+include 'backend:product-service'
+include 'backend:user-service'
