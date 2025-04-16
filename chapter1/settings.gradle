@@ -1,3 +1,6 @@
 rootProject.name = 'chapter1'
 include 'backend:product-service'
 include 'backend:user-service'
+include 'backend:order-service'
+include 'backend:payment-service'
+include 'backend:notification-service'
