@@ -2,7 +2,7 @@ spring:
   application:
     name: product-service
   datasource:
-    url: jdbc:h2:file:./backend/product-service/data/product-db
+    url: jdbc:h2:file:${user.dir}/backend/product-service/data/productdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -11,6 +11,7 @@ spring:
       enabled: true
       path: /h2-console
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -19,3 +20,9 @@ spring:
         format_sql: true
 server:
   port: 8001
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
