@@ -2,7 +2,7 @@ spring:
   application:
     name: order-service
   datasource:
-    url: jdbc:h2:file:./data/orderdb
+    url: jdbc:h2:file:./data/order-db
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -19,7 +19,7 @@ spring:
       hibernate:
         format_sql: true
 server:
-  port: 8002
+  port: 8003
 
 springdoc:
   api-docs:

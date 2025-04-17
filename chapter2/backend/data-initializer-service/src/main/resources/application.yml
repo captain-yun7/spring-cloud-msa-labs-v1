@@ -8,31 +8,31 @@ spring:
   datasource:
     user-service:
       driver-class-name: org.h2.Driver
-      url: jdbc:h2:file:../user-service/data/userdb
+      url: jdbc:h2:file:../user-service/data/user-db
       username: sa
       password: 
       
     product-service:
       driver-class-name: org.h2.Driver
-      url: jdbc:h2:file:../product-service/data/productdb
+      url: jdbc:h2:file:../product-service/data/product-db
       username: sa
       password: 
       
     order-service:
       driver-class-name: org.h2.Driver
-      url: jdbc:h2:file:../order-service/data/orderdb
+      url: jdbc:h2:file:../order-service/data/order-db
       username: sa
       password: 
       
     payment-service:
       driver-class-name: org.h2.Driver
-      url: jdbc:h2:file:../payment-service/data/paymentdb
+      url: jdbc:h2:file:../payment-service/data/payment-db
       username: sa
       password: 
       
     notification-service:
       driver-class-name: org.h2.Driver
-      url: jdbc:h2:file:../notification-service/data/notificationdb
+      url: jdbc:h2:file:../notification-service/data/notification-db
       username: sa
       password: 
 

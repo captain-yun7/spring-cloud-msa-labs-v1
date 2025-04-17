@@ -2,7 +2,7 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:h2:file:./data/userdb
+    url: jdbc:h2:file:./data/user-db
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -19,7 +19,7 @@ spring:
       hibernate:
         format_sql: true
 server:
-  port: 8000
+  port: 8002
 
 springdoc:
   api-docs:
