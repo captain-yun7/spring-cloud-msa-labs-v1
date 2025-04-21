@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터 초기화 서비스</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: #f9f9f9;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .primary {
+            background-color: #2196F3;
+            color: white;
+        }
+        .warning {
+            background-color: #ff9800;
+            color: white;
+        }
+        .danger {
+            background-color: #f44336;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .service-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .service-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .service-item:hover {
+            background-color: #e9f5ff;
+        }
+        .response {
+            background-color: #f1f1f1;
+            border-left: 4px solid #4CAF50;
+            padding: 10px 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        .response pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>데이터 초기화 서비스</h1>
+        
+        <div class="card">
+            <h3>모든 서비스 데이터 초기화</h3>
+            <p>모든 서비스의 빈 테이블에 초기 데이터를 추가합니다. 기존 데이터는 유지됩니다.</p>
+            <div class="button-group">
+                <button class="primary" onclick="initializeAllServices()">초기화 실행</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>모든 서비스 데이터 리셋</h3>
+            <p>모든 서비스의 기존 데이터를 삭제하고 초기 데이터를 다시 추가합니다.</p>
+            <div class="button-group">
+                <button class="danger" onclick="resetAllData()">리셋 실행</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>특정 서비스 데이터 초기화</h3>
+            <p>선택한 서비스의 빈 테이블에만 초기 데이터를 추가합니다.</p>
+            <div class="service-list">
+                <div class="service-item" onclick="initializeService('user-service')">user-service</div>
+                <div class="service-item" onclick="initializeService('product-service')">product-service</div>
+                <div class="service-item" onclick="initializeService('order-service')">order-service</div>
+                <div class="service-item" onclick="initializeService('payment-service')">payment-service</div>
+                <div class="service-item" onclick="initializeService('notification-service')">notification-service</div>
+            </div>
+        </div>
+
+        <div id="response" class="response">
+            <h3>응답 결과</h3>
+            <pre id="responseText"></pre>
+        </div>
+    </div>
+
+    <script>
+        function showResponse(data) {
+            const responseEl = document.getElementById('response');
+            const responseTextEl = document.getElementById('responseText');
+            responseTextEl.textContent = JSON.stringify(data, null, 2);
+            responseEl.style.display = 'block';
+        }
+
+        async function makeApiCall(url, method = 'POST') {
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showResponse(data);
+                return data;
+            } catch (error) {
+                showResponse({ status: 'error', message: error.message });
+                console.error('API 호출 오류:', error);
+            }
+        }
+
+        function initializeAllServices() {
+            makeApiCall('/api/data/initialize');
+        }
+
+        function resetAllData() {
+            if (confirm('모든 데이터를 리셋하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                makeApiCall('/api/data/reset');
+            }
+        }
+
+        function initializeService(serviceName) {
+            makeApiCall(`/api/data/initialize/${serviceName}`);
+        }
+
+        // 페이지 로드 시 서비스 상태 확인
+        document.addEventListener('DOMContentLoaded', () => {
+            makeApiCall('/api/data/status', 'GET');
+        });
+    </script>
+</body>
+</html> 
