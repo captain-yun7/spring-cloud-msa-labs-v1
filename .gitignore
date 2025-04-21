@@ -5,8 +5,10 @@
 # Maven/Gradle 관련 파일
 target/
 build/
+**/bin/
 *.war
 *.jar
+!gradle-wrapper.jar
 .gradle/
 **/.gradle/
 
