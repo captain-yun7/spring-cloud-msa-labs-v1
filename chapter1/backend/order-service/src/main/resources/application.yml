@@ -2,10 +2,10 @@ spring:
   application:
     name: order-service
   datasource:
-    url: jdbc:h2:file:./backend/order-service/data/order-db
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/order-db
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123qwe
   h2:
     console:
       enabled: true
