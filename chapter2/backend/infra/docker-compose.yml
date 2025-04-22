@@ -1,0 +1,29 @@
+version: '3.8'  # Docker Compose 파일 형식 버전
+
+services:
+  # MySQL 설정
+  mysql:
+    image: mysql:8.0  # MySQL 8.0 버전 이미지 사용
+    container_name: msa-mysql  # 컨테이너 이름 지정
+    ports:
+      - "3306:3306"  # 호스트의 3306 포트를 컨테이너의 3306 포트와 매핑
+    volumes:
+      - mysql-data:/var/lib/mysql  # 데이터 영구 저장을 위한 볼륨 마운트
+      - ./mysql/init:/docker-entrypoint-initdb.d  # 초기화 스크립트 마운트
+    environment:
+      MYSQL_ROOT_PASSWORD: 123qwe  # MySQL root 계정 비밀번호 설정
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"  # 빈 비밀번호 허용하지 않음
+      TZ: Asia/Seoul  # 타임존 설정
+    command:
+      - --character-set-server=utf8mb4  # 문자셋 설정
+      - --collation-server=utf8mb4_unicode_ci  # 정렬 규칙 설정
+    restart: always  # 컨테이너 항상 재시작
+    networks:
+      - msa-network  # 사용할 네트워크
+
+volumes:
+  mysql-data:  # 데이터 저장용 볼륨 정의
+
+networks:
+  msa-network:  # 마이크로서비스 간 통신을 위한 네트워크
+    driver: bridge  # 브릿지 네트워크 사용
