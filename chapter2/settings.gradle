@@ -1,7 +1,0 @@
-rootProject.name = 'chapter2'
-include 'backend:product-service'
-include 'backend:user-service'
-include 'backend:order-service'
-include 'backend:payment-service'
-include 'backend:notification-service'
-include 'backend:data-initializer-service'
