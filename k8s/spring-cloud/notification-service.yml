@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: spring-cloud-msa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret
+      containers:
+      - name: notification-service
+        image: 857360183365.dkr.ecr.ap-northeast-2.amazonaws.com/spring-cloud-msa/notification-service:v2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8084
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "docker"
+        - name: SPRING_CONFIG_IMPORT
+          value: ""
+        - name: SPRING_CLOUD_CONFIG_ENABLED
+          value: "false"
+        - name: SPRING_CLOUD_CONFIG_IMPORT_CHECK_ENABLED
+          value: "false"
+        - name: SPRING_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: common-secret
+              key: rabbitmq-username
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: common-secret
+              key: rabbitmq-password
+        envFrom:
+        - configMapRef:
+            name: common-config
+        - configMapRef:
+            name: notification-service-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8084
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8084
+          initialDelaySeconds: 60
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service-service
+  namespace: spring-cloud-msa
+spec:
+  selector:
+    app: notification-service
+  ports:
+  - name: http
+    port: 8084
+    targetPort: 8084
+  type: ClusterIP

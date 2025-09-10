@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-config
+  namespace: spring-cloud-msa
+data:
+  # 공통 설정
+  spring.jpa.hibernate.ddl-auto: "update"
+  spring.jpa.show-sql: "true"
+  spring.jpa.properties.hibernate.format_sql: "true"
+  spring.datasource.driver-class-name: "com.mysql.cj.jdbc.Driver"
+  
+  # 관리 엔드포인트
+  management.endpoints.web.exposure.include: "health,info,refresh"
+  management.endpoint.refresh.enabled: "true"
+  
+  # Zipkin 추적
+  spring.zipkin.base-url: "http://zipkin-service:9411"
+  
+  # Eureka 클라이언트
+  eureka.client.service-url.defaultZone: "http://eureka-server-service:8761/eureka/"
+  
+  # RabbitMQ 호스트  
+  spring.rabbitmq.host: "rabbitmq-service"
+  spring.rabbitmq.port: "5672"
+  spring.rabbitmq.template.observation-enabled: "true"
+  spring.rabbitmq.listener.simple.observation-enabled: "true" 
+  spring.rabbitmq.listener.direct.observation-enabled: "true"
+  
+  # 주문 이벤트 설정
+  order.event.exchange: "order.exchange"
+  order.event.queue.notification: "order.notification.queue"
+  order.event.queue.inventory: "order.inventory.queue"
+  order.event.queue.payment-request: "order.payment.request.queue"
+  order.event.queue.inventory-failed: "order.inventory.failed.queue"
+  order.event.queue.payment-completed: "order.payment.completed.queue"
+  order.event.queue.payment-failed: "order.payment.failed.queue"
+  order.event.queue.inventory-restore: "order.inventory.restore.queue"
+  order.event.routing-key.notification: "order.notification"
+  order.event.routing-key.inventory: "order.inventory"
+  order.event.routing-key.payment-request: "order.payment.request"
+  order.event.routing-key.inventory-failed: "order.inventory.failed"
+  order.event.routing-key.payment-completed: "order.payment.completed" 
+  order.event.routing-key.payment-failed: "order.payment.failed"
+  order.event.routing-key.inventory-restore: "order.inventory.restore"

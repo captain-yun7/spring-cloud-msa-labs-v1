@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  namespace: spring-cloud-msa
+data:
+  # 서비스 설정
+  server.port: "8080"
+  spring.application.name: "api-gateway"
+  
+  # Spring Cloud Gateway 라우팅 설정 (YAML 형태로 변경)
+  application.yml: |
+    spring:
+      cloud:
+        gateway:
+          mvc:
+            routes:
+              - id: user-service
+                uri: lb://user-service
+                predicates:
+                  - Path=/api/users/**
+                filters:
+                  - StripPrefix=1
+              - id: product-service
+                uri: lb://product-service
+                predicates:
+                  - Path=/api/products/**
+                filters:
+                  - StripPrefix=1
+              - id: order-service
+                uri: lb://order-service
+                predicates:
+                  - Path=/api/orders/**
+                filters:
+                  - StripPrefix=1
+  
+  # 관리 및 추적 설정
+  management.tracing.propagation.type: "w3c"

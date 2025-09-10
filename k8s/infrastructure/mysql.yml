@@ -1,0 +1,229 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+  namespace: spring-cloud-msa
+data:
+  01-create-databases.sql: |
+    DROP DATABASE IF EXISTS `user_service_db`;
+    DROP DATABASE IF EXISTS `product_service_db`;
+    DROP DATABASE IF EXISTS `order_service_db`;
+    DROP DATABASE IF EXISTS `payment_service_db`;
+    DROP DATABASE IF EXISTS `notification_service_db`;
+
+    CREATE DATABASE `user_service_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE DATABASE `product_service_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE DATABASE `order_service_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE DATABASE `payment_service_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE DATABASE `notification_service_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  
+  02-create-tables.sql: |
+    -- User Service 테이블
+    USE `user_service_db`;
+
+    CREATE TABLE users (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+    -- Product Service 테이블
+    USE `product_service_db`;
+
+    CREATE TABLE products (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        price DECIMAL(10, 2) NOT NULL,
+        stock_quantity INTEGER NOT NULL DEFAULT 0,
+        category VARCHAR(50) NOT NULL,
+        image_url VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+    -- Order Service 테이블
+    USE `order_service_db`;
+
+    CREATE TABLE orders (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        user_id BIGINT NOT NULL,
+        total_amount DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE order_items (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        order_id BIGINT NOT NULL,
+        product_id BIGINT NOT NULL,
+        product_name VARCHAR(100) NOT NULL,
+        price DECIMAL(10, 2) NOT NULL,
+        quantity INTEGER NOT NULL,
+        subtotal DECIMAL(10, 2) NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    );
+
+    -- Payment Service 테이블
+    USE `payment_service_db`;
+
+    CREATE TABLE payments (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        order_id BIGINT NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        payment_method VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    );
+
+    -- Notification Service 테이블
+    USE `notification_service_db`;
+
+    CREATE TABLE notifications (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        user_id BIGINT NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'UNREAD',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+  03-insert-sample-data.sql: |
+    -- User Service 샘플 데이터
+    USE `user_service_db`;
+
+    INSERT INTO users (email, password, name)
+    VALUES
+        ('user1@example.com', '$2a$10$TR449R5BNAKor7G8C9QyjuwONmlkrQiCybwkEOUAVVN2rzFiAqQC6', '박민수'),
+        ('user2@example.com', '$2a$10$TR449R5BNAKor7G8C9QyjuwONmlkrQiCybwkEOUAVVN2rzFiAqQC6', '최지은'),
+        ('admin@example.com', '$2a$10$TR449R5BNAKor7G8C9QyjuwONmlkrQiCybwkEOUAVVN2rzFiAqQC6', '관리자');
+
+    -- Product Service 샘플 데이터
+    USE `product_service_db`;
+
+    INSERT INTO products (name, description, price, stock_quantity, category, image_url)
+    VALUES
+        ('MacBook Air M2', 'Apple MacBook Air with M2 chip, 13-inch display', 1290000.00, 15, 'Electronics', 'https://example.com/images/macbook-air.jpg'),
+        ('iPhone 15 Pro', 'Latest iPhone with A17 Pro chip', 1550000.00, 25, 'Electronics', 'https://example.com/images/iphone15.jpg'),
+        ('Nike Air Max', 'Comfortable running shoes for daily wear', 120000.00, 50, 'Fashion', 'https://example.com/images/nike-airmax.jpg'),
+        ('Samsung 4K Monitor', '32-inch 4K UHD monitor with USB-C', 450000.00, 8, 'Electronics', 'https://example.com/images/samsung-monitor.jpg'),
+        ('Starbucks Tumbler', 'Reusable coffee tumbler 473ml', 35000.00, 100, 'Lifestyle', 'https://example.com/images/starbucks-tumbler.jpg'),
+        ('Wireless Keyboard', 'Bluetooth mechanical keyboard', 89000.00, 30, 'Electronics', 'https://example.com/images/keyboard.jpg'),
+        ('Cotton T-Shirt', 'Basic cotton t-shirt, multiple colors', 25000.00, 200, 'Fashion', 'https://example.com/images/tshirt.jpg'),
+        ('Coffee Beans 1kg', 'Premium Arabica coffee beans', 45000.00, 60, 'Food', 'https://example.com/images/coffee-beans.jpg'),
+        ('Yoga Mat', 'Non-slip yoga mat for exercise', 65000.00, 40, 'Sports', 'https://example.com/images/yoga-mat.jpg'),
+        ('Bluetooth Speaker', 'Portable wireless speaker with bass', 95000.00, 35, 'Electronics', 'https://example.com/images/speaker.jpg');
+
+    -- Payment Service 샘플 데이터
+    USE `payment_service_db`;
+
+    INSERT INTO payments (order_id, amount, status, payment_method)
+    VALUES
+        (1, 1290000.00, 'COMPLETED', 'CREDIT_CARD'),
+        (2, 120000.00, 'COMPLETED', 'BANK_TRANSFER'),
+        (3, 450000.00, 'PENDING', 'CREDIT_CARD');
+
+    -- Notification Service 샘플 데이터
+    USE `notification_service_db`;
+
+    INSERT INTO notifications (user_id, message, type, status)
+    VALUES
+        (1, '주문이 정상적으로 처리되었습니다.', 'ORDER_CONFIRMED', 'UNREAD'),
+        (2, '결제가 완료되었습니다.', 'PAYMENT_COMPLETED', 'READ'),
+        (1, '상품이 배송 중입니다.', 'SHIPPING_STARTED', 'UNREAD'),
+        (3, '회원가입을 환영합니다!', 'WELCOME', 'READ');
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: spring-cloud-msa
+spec:
+  serviceName: mysql-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root123"
+        - name: MYSQL_DATABASE
+          value: "spring_cloud_msa"
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+        - name: mysql-initdb
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - mysql
+            - -h
+            - localhost
+            - -uroot
+            - -proot123
+            - -e
+            - "SELECT 1"
+          initialDelaySeconds: 20
+          periodSeconds: 10
+      volumes:
+      - name: mysql-initdb
+        configMap:
+          name: mysql-initdb-config
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "gp3"
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: spring-cloud-msa
+spec:
+  selector:
+    app: mysql
+  ports:
+  - name: mysql
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  namespace: spring-cloud-msa
+data:
+  # 서비스 설정
+  server.port: "8084"
+  spring.application.name: "notification-service"
