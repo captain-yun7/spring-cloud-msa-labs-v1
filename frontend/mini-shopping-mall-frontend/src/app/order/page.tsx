@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Product, productApi, orderApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
-export default function OrderPage() {
+function OrderPageContent() {
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ export default function OrderPage() {
   
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
   const productId = Number(searchParams.get('productId'));
   const initialQuantity = Number(searchParams.get('quantity')) || 1;
@@ -34,16 +34,16 @@ export default function OrderPage() {
       try {
         const data = await productApi.getProduct(productId);
         setProduct(data);
-      } catch (err) {
+      } catch (error) {
         setError('상품 정보를 불러올 수 없습니다.');
-        console.error(err);
+        console.error(error);
       }
     };
 
     if (productId) {
       fetchProduct();
     }
-  }, [productId, initialQuantity, authLoading, user]);
+  }, [productId, initialQuantity, authLoading, user, router]);
 
   const handleSubmitOrder = async () => {
     if (!product || !user) return;
@@ -59,9 +59,9 @@ export default function OrderPage() {
       });
       
       router.push(`/order/success?orderId=${order.id}`);
-    } catch (err) {
+    } catch (error) {
       setError('주문 처리 중 오류가 발생했습니다.');
-      console.error(err);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -139,5 +139,13 @@ export default function OrderPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrderPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <OrderPageContent />
+    </Suspense>
   );
 }

@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { orderApi, Order } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated, loading: authLoading, user } = useAuth();
+  const { loading: authLoading, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -21,14 +22,14 @@ export default function OrdersPage() {
     }
 
     fetchMyOrders();
-  }, [authLoading, user]);
+  }, [authLoading, user, router]);
 
   const fetchMyOrders = async () => {
     try {
       setLoading(true);
       const data = await orderApi.getMyOrders();
       setOrders(data);
-    } catch (err) {
+    } catch (error) {
       setError('주문 내역을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
@@ -58,12 +59,12 @@ export default function OrdersPage() {
       {orders.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-gray-600 text-lg">주문 내역이 없습니다.</p>
-          <a
+          <Link
             href="/products"
             className="mt-4 inline-block bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600"
           >
             상품 둘러보기
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="space-y-6">

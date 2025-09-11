@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Order, orderApi } from '@/lib/api';
 
-export default function OrderSuccessPage() {
+function OrderSuccessPageContent() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +24,9 @@ export default function OrderSuccessPage() {
       try {
         const data = await orderApi.getOrder(Number(orderId));
         setOrder(data);
-      } catch (err) {
+      } catch (error) {
         setError('주문 정보를 불러올 수 없습니다.');
-        console.error(err);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -94,5 +94,13 @@ export default function OrderSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <OrderSuccessPageContent />
+    </Suspense>
   );
 }

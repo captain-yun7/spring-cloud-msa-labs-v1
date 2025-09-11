@@ -32,7 +32,7 @@ export default function LoginPage() {
 
             // 메인 페이지로 이동
             router.push('/');
-        } catch (err) {
+        } catch (error) {
             setError('로그인에 실패했습니다. 이메일과 패스워드를 확인해주세요.');
         } finally {
             setLoading(false);
