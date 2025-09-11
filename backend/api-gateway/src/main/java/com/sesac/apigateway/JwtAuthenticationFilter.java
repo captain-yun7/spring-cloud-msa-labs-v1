@@ -70,8 +70,8 @@ public class JwtAuthenticationFilter implements Filter {
     }
 
     private boolean isPublicPath(String path, String method) {
-        return path.equals("/api/users/login") ||
-                path.startsWith("/api/products") ||
+        return path.equals("/users/login") ||                
+                path.startsWith("/products") ||                
                 path.startsWith("/actuator/") ||
                 "OPTIONS".equals(method);
     }
