@@ -13,22 +13,23 @@ data:
     spring:
       cloud:
         gateway:
-          mvc:
-            routes:
+          server:
+            webmvc:
+              routes:
               - id: user-service
-                uri: lb://user-service
+                uri: http://user-service-service:8081
                 predicates:
                   - Path=/api/users/**
                 filters:
                   - StripPrefix=1
               - id: product-service
-                uri: lb://product-service
+                uri: http://product-service-service:8082
                 predicates:
                   - Path=/api/products/**
                 filters:
                   - StripPrefix=1
               - id: order-service
-                uri: lb://order-service
+                uri: http://order-service-service:8083
                 predicates:
                   - Path=/api/orders/**
                 filters:

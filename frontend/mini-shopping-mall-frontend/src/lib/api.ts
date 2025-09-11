@@ -1,5 +1,5 @@
-// Mixed Content 오류 해결을 위해 Next.js API 프록시 사용
-const API_BASE_URL = typeof window !== 'undefined' ? '/api/proxy' : 'http://localhost:8080/api';
+// API 기본 URL - 환경변수에서 가져옴
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function apiRequest<T>(
     endpoint: string,

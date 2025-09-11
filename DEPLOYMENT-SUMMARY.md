@@ -249,6 +249,146 @@ kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090
 
 ---
 
+## 🔧 **프론트엔드 연동 및 API Gateway 라우팅 트러블슈팅**
+
+### **8. Next.js 프론트엔드 배포 및 CORS 이슈**
+
+**🚨 문제:**
+- Vercel로 배포된 HTTPS 프론트엔드에서 HTTP EKS API로 Mixed Content 에러
+- 로그인 후 계속 로그인 페이지로 리다이렉션
+
+**✅ 해결과정:**
+
+#### **8.1 Mixed Content 에러 해결**
+```javascript
+// 환경변수 기반 API 설정
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
+// CORS 설정 수정
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")  // 프로덕션에서 특정 도메인으로 제한
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(false);
+    }
+}
+```
+
+#### **8.2 User Service Eureka 연결 누락**
+```yaml
+# User Service 환경변수 추가
+env:
+- name: EUREKA_CLIENT_ENABLED
+  value: "true"  # false → true로 변경
+```
+
+### **9. API Gateway 라우팅 설정 트러블슈팅**
+
+**🚨 주요 문제들:**
+1. ConfigMap 파일 마운트 누락
+2. Spring Cloud Gateway 설정 키 변경
+3. Eureka vs Kubernetes Service 불일치
+
+#### **9.1 ConfigMap 볼륨 마운트 문제**
+**문제:** `application.yml`이 환경변수로만 로드되어 라우팅 설정 무시
+```yaml
+# AS-IS: 환경변수만 로드 (❌)
+envFrom:
+- configMapRef:
+    name: api-gateway-config
+
+# TO-BE: 파일 볼륨 마운트 추가 (✅)
+envFrom:
+- configMapRef:
+    name: api-gateway-config
+volumeMounts:
+- name: config-volume
+  mountPath: /workspace/application.yml
+  subPath: application.yml
+  readOnly: true
+volumes:
+- name: config-volume
+  configMap:
+    name: api-gateway-config
+```
+
+#### **9.2 Spring Cloud Gateway 설정 키 변경**
+**문제:** Spring Boot 3.x에서 Gateway MVC 설정 경로 변경
+```yaml
+# AS-IS: 구버전 설정 (❌)
+spring:
+  cloud:
+    gateway:
+      mvc:
+        routes:
+
+# TO-BE: 신버전 설정 (✅)  
+spring:
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+```
+
+#### **9.3 Kubernetes에서 Load Balancer URI 문제**
+**문제:** Eureka 서비스 이름으로 접근시 Pod DNS 해결 불가
+```yaml
+# AS-IS: Eureka 기반 (❌)
+- id: product-service
+  uri: lb://PRODUCT-SERVICE  # Pod 이름으로 접근 시도 → DNS 실패
+
+# TO-BE: Kubernetes Service 직접 사용 (✅)
+- id: product-service  
+  uri: http://product-service-service:8082  # Service DNS로 직접 접근
+```
+
+### **10. JWT Filter와 StripPrefix 경로 처리**
+
+**🚨 문제:** JWT Filter가 StripPrefix 적용 전/후 경로를 혼동
+
+**✅ 해결방법:**
+```java
+// JWT Filter는 StripPrefix 적용 전 원본 경로를 받음
+private boolean isPublicPath(String path, String method) {
+    return path.equals("/users/login") ||        // StripPrefix 후 경로
+            path.startsWith("/products") ||      // StripPrefix 후 경로  
+            path.startsWith("/actuator/") ||
+            "OPTIONS".equals(method);
+}
+```
+
+**요청 플로우:**
+```
+1. 프론트엔드: /api/products 요청
+2. JWT Filter: /api/products 경로 확인 → public path 허용
+3. Gateway Route: /api/products → StripPrefix=1 → /products
+4. Product Service: /products 경로로 라우팅
+5. 응답: 제품 데이터 반환
+```
+
+### **11. Kubernetes vs Eureka 서비스 디스커버리**
+
+**💡 교훈:** Kubernetes 환경에서는 Eureka보다 네이티브 Service Discovery 선호
+
+**Eureka 방식 (복잡함):**
+```
+Request → API Gateway → Eureka Registry → Service Instance → Pod IP → DNS 실패
+```
+
+**Kubernetes 방식 (단순함):**
+```  
+Request → API Gateway → Kubernetes Service → Pod (로드밸런싱 자동)
+```
+
+**결론:** Kubernetes 환경에서는 Eureka 대신 Service 이름을 직접 사용하는 것이 더 효율적
+
+---
+
 ## 📚 **참고 자료**
 
 - [EKS 공식 문서](https://docs.aws.amazon.com/eks/)
@@ -258,7 +398,25 @@ kubectl port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090
 
 ---
 
-**🎉 Spring Cloud 마이크로서비스가 EKS에서 완전히 성공적으로 실행 중입니다!**
+## 🎯 **최종 성과 및 교훈**
+
+### **성공적으로 해결된 주요 이슈들:**
+1. ✅ **ConfigMap 파일 마운트**: 환경변수 → 볼륨 마운트로 전환
+2. ✅ **Spring Cloud Gateway 설정**: 신버전 호환 설정 키 적용  
+3. ✅ **Kubernetes Service Discovery**: Eureka → K8s Service 직접 사용
+4. ✅ **JWT Filter 경로 처리**: StripPrefix 적용 순서 이해 및 해결
+5. ✅ **프론트엔드 연동**: CORS, Mixed Content, Eureka 연결 이슈 해결
+
+### **핵심 학습 포인트:**
+- **Kubernetes Native 접근**: 전통적 서비스 디스커버리보다 K8s Service 활용이 효과적
+- **설정 파일 vs 환경변수**: 복잡한 YAML 설정은 파일 마운트가 필수
+- **요청 플로우 이해**: Filter → Gateway Route → StripPrefix → Service 순서 파악 중요
+- **단계별 디버깅**: 로그 분석을 통한 체계적 문제 해결 접근
+
+---
+
+**🎉 Spring Cloud 마이크로서비스가 EKS에서 완전히 성공적으로 실행 중이며, 프론트엔드와의 연동까지 완료되었습니다!**
 
 *생성일: 2025-09-10*  
+*최종 업데이트: 2025-09-11 (프론트엔드 연동 및 API Gateway 라우팅 완성)*  
 *작성자: Claude Code*

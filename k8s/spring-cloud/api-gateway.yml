@@ -35,6 +35,11 @@ spec:
             name: common-config
         - configMapRef:
             name: api-gateway-config
+        volumeMounts:
+        - name: config-volume
+          mountPath: /workspace/application.yml
+          subPath: application.yml
+          readOnly: true
         resources:
           requests:
             memory: "512Mi"
@@ -54,6 +59,10 @@ spec:
             port: 8080
           initialDelaySeconds: 60
           periodSeconds: 10
+      volumes:
+      - name: config-volume
+        configMap:
+          name: api-gateway-config
 
 ---
 apiVersion: v1
