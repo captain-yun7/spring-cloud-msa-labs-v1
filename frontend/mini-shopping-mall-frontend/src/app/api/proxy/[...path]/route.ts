@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = 'http://a561f64c9f7ed40bfaae31fcc18425a0-173960429.ap-northeast-2.elb.amazonaws.com:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function GET(
   request: NextRequest,
